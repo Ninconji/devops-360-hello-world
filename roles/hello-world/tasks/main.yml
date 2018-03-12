@@ -1,10 +1,16 @@
 ---
 # tasks file for hello-world
 
+- name: Stop apache2
+  service:
+    state: stopped
+    name: apache2
+
 - name: Install nginx
   apt:
     state: present
     name: nginx
+    cache_valid_time: 3600
     update_cache: yes
 
 - name: Copy hello-world vhost conf
@@ -12,23 +18,28 @@
     src: hello-world
     dest: /etc/nginx/sites-available/hello-world
 
--name: Symlink hello-world in sites-enabled
+- name: Symlink hello-world in sites-enabled
   file:
       state: link
       src: /etc/nginx/sites-available/hello-world
       dest: /etc/nginx/sites-enabled/hello-world
 
 
--name: Create html folder
+- name: Create html folder
   file:
     state: directory
     path: /opt/hello-world
     owner: www-data
     group: www-data
 
--name: Render from template index.tml
+- name: Render from template index.tml
   template:
     src: index.html.j2
     dest: /opt/hello-world/index.html
     owner: www-data
     group: www-data
+
+- name: Restart nginx
+  service:
+    state: reloaded
+    name: nginx
